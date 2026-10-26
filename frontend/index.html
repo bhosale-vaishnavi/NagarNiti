@@ -1,1 +1,844 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NagarNiti | Civic Intelligence</title>
+
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <style>
+    :root {
+      --green: #176b52;
+      --green-dark: #10523f;
+      --bg: #f6f7f3;
+      --surface: #ffffff;
+      --ink: #202b27;
+      --muted: #7b8580;
+      --line: #e7eae5;
+      --sage: #e9f1eb;
+      --amber: #a96816;
+      --red: #bc5148;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      font-size: 14px;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .layout {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 224px minmax(0, 1fr);
+    }
+
+    aside {
+      background: #fff;
+      border-right: 1px solid var(--line);
+      padding: 26px 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 8px 30px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--green);
+      border-radius: 11px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand-name {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+    }
+
+    .brand-sub {
+      color: var(--muted);
+      font-size: 10px;
+      margin-top: 3px;
+      letter-spacing: 1.3px;
+    }
+
+    .nav-label {
+      color: #9aa19c;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      padding: 10px 10px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      padding: 12px;
+      margin-bottom: 4px;
+      text-align: left;
+      color: #68736d;
+    }
+
+    .nav-item.active {
+      color: var(--green);
+      background: var(--sage);
+      font-weight: 700;
+    }
+
+    .nav-icon { width: 20px; text-align: center; }
+
+    .side-note {
+      margin-top: 40px;
+      padding: 14px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    main { min-width: 0; }
+
+    header {
+      height: 76px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 30px;
+    }
+
+    .crumb { color: var(--muted); font-size: 12px; }
+    .crumb strong { color: var(--ink); }
+
+    .ward-select {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--ink);
+    }
+
+    .content {
+      padding: 30px;
+      max-width: 1600px;
+      margin: auto;
+    }
+
+    .page-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: clamp(24px, 3vw, 31px);
+      letter-spacing: -1px;
+      margin: 0 0 8px;
+    }
+
+    .subtitle { color: var(--muted); line-height: 1.6; }
+
+    .primary-btn {
+      background: var(--green);
+      color: white;
+      border: 0;
+      padding: 12px 16px;
+      border-radius: 9px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .primary-btn:hover { background: var(--green-dark); }
+
+    .demo-banner {
+      padding: 11px 14px;
+      background: #fff8e9;
+      color: #80571c;
+      border: 1px solid #f1e2bf;
+      border-radius: 9px;
+      margin-bottom: 20px;
+      font-size: 12px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      min-width: 0;
+    }
+
+    .stat { padding: 19px; }
+
+    .stat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .stat-symbol {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      background: var(--sage);
+      color: var(--green);
+      border-radius: 9px;
+      font-size: 17px;
+    }
+
+    .stat-number {
+      font-size: 30px;
+      font-weight: 750;
+      letter-spacing: -1px;
+      margin: 15px 0 7px;
+    }
+
+    .stat-foot { color: var(--muted); font-size: 11px; }
+    .green { color: var(--green); }
+    .orange { color: var(--amber); }
+    .red { color: var(--red); }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .card-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 19px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 { font-size: 15px; margin: 0 0 5px; }
+    .small-text { font-size: 11px; color: var(--muted); }
+
+    .map-tools {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      padding: 12px 16px;
+    }
+
+    .filter {
+      background: white;
+      border: 1px solid var(--line);
+      color: #64716a;
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 11px;
+    }
+
+    .filter.active {
+      background: var(--sage);
+      color: var(--green);
+      border-color: #b9d5c4;
+    }
+
+    #map {
+      height: 390px;
+      width: 100%;
+      background: #e9eee8;
+      z-index: 1;
+    }
+
+    .map-legend {
+      padding: 13px 18px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+
+    .issue-list { padding: 0 18px; }
+
+    .issue {
+      padding: 17px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .issue:last-child { border-bottom: 0; }
+
+    .issue-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .issue-title { font-weight: 650; line-height: 1.5; }
+
+    .status {
+      display: inline-block;
+      padding: 5px 7px;
+      border-radius: 6px;
+      font-size: 10px;
+      white-space: nowrap;
+      background: #fdf0db;
+      color: #95601b;
+    }
+
+    .status.open {
+      background: #fbe9e7;
+      color: #ad4941;
+    }
+
+    .status.resolved {
+      background: #e7f3e9;
+      color: #33734a;
+    }
+
+    .issue-meta {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.7;
+      margin-top: 6px;
+    }
+
+    .priority {
+      font-weight: 700;
+      color: var(--red);
+      font-size: 11px;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .chart-body { padding: 18px 20px 20px; }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 28px;
+      align-items: center;
+      gap: 10px;
+      margin: 18px 0;
+      font-size: 11px;
+    }
+
+    .bar-track {
+      height: 8px;
+      background: #edf0eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 8px;
+      background: var(--green);
+    }
+
+    .resolution-score {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 22px 20px;
+    }
+
+    .score-ring {
+      width: 84px;
+      height: 84px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--green) 0 72%, #e8eee8 72% 100%);
+      position: relative;
+    }
+
+    .score-ring::before {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      background: white;
+      border-radius: 50%;
+    }
+
+    .score-ring strong { position: relative; font-size: 20px; }
+
+    footer {
+      padding: 25px 0 8px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    @media (max-width: 1050px) {
+      .layout { grid-template-columns: 185px minmax(0, 1fr); }
+      .content { padding: 22px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 650px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { padding: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .brand { padding: 0 5px 12px; }
+      .nav-label, .side-note { display: none; }
+      .nav-list { display: flex; overflow-x: auto; gap: 5px; }
+      .nav-item { width: auto; white-space: nowrap; margin: 0; padding: 9px; font-size: 12px; }
+      header { height: 60px; padding: 0 16px; }
+      .content { padding: 20px 14px; }
+      .page-heading { align-items: flex-start; flex-direction: column; }
+      .stats { gap: 10px; }
+      .stat { padding: 14px; }
+      .stat-number { font-size: 25px; }
+      .stat-top { align-items: flex-start; }
+      .stat-symbol { width: 29px; height: 29px; }
+      .bottom-grid { grid-template-columns: 1fr; }
+      #map { height: 320px; }
+      .card-heading { padding: 16px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="brand-mark">N</div>
+        <div>
+          <div class="brand-name">NagarNiti</div>
+          <div class="brand-sub">CIVIC INTELLIGENCE</div>
+        </div>
+      </div>
+
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="nav-list">
+        <button class="nav-item active" data-view="overview">
+          <span class="nav-icon">▦</span> Overview
+        </button>
+        <button class="nav-item" data-view="map">
+          <span class="nav-icon">⌖</span> Ward map
+        </button>
+        <button class="nav-item" data-view="issues">
+          <span class="nav-icon">≡</span> Issue register
+        </button>
+        <button class="nav-item" data-view="analytics">
+          <span class="nav-icon">↗</span> Analytics
+        </button>
+      </nav>
+
+      <div class="side-note">
+        <strong style="color:#27372f">Built for better wards.</strong>
+        <br>
+        One shared view of civic issues, progress and accountability.
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <div class="crumb">Workspace / <strong>Overview</strong></div>
+        <select class="ward-select" aria-label="Select ward">
+          <option>Phaltan · Demo ward</option>
+          <option>All demo wards</option>
+        </select>
+      </header>
+
+      <div class="content">
+        <div class="page-heading">
+          <div>
+            <h1>Civic overview</h1>
+            <div class="subtitle">
+              A clearer picture of what's happening across your ward.
+            </div>
+          </div>
+          <button class="primary-btn" id="reportBtn">＋ Report an issue</button>
+        </div>
+
+        <div class="demo-banner">
+          <strong>DEMO ENVIRONMENT</strong> — All issue counts, locations and
+          performance figures on this screen are illustrative sample data,
+          not live municipal records.
+        </div>
+
+        <section class="stats">
+          <article class="card stat">
+            <div class="stat-top">
+              Total reported
+              <span class="stat-symbol">▤</span>
+            </div>
+            <div class="stat-number">248</div>
+            <div class="stat-foot">Illustrative reports</div>
+          </article>
+
+          <article class="card stat">
+            <div class="stat-top">
+              Open issues
+              <span class="stat-symbol">◷</span>
+            </div>
+            <div class="stat-number">86</div>
+            <div class="stat-foot"><span class="orange">Needs attention</span></div>
+          </article>
+
+          <article class="card stat">
+            <div class="stat-top">
+              Resolved
+              <span class="stat-symbol">✓</span>
+            </div>
+            <div class="stat-number">162</div>
+            <div class="stat-foot"><span class="green">65.3%</span> of demo reports</div>
+          </article>
+
+          <article class="card stat">
+            <div class="stat-top">
+              Overdue
+              <span class="stat-symbol">!</span>
+            </div>
+            <div class="stat-number">19</div>
+            <div class="stat-foot"><span class="red">Past target date</span></div>
+          </article>
+        </section>
+
+        <section class="main-grid">
+          <article class="card" id="mapCard">
+            <div class="card-heading">
+              <div>
+                <h2>Ward issue map</h2>
+                <div class="small-text">Explore sample issue locations</div>
+              </div>
+              <span class="small-text">Phaltan, MH</span>
+            </div>
+
+            <div class="map-tools">
+              <button class="filter active" data-filter="all">All issues</button>
+              <button class="filter" data-filter="high">High priority</button>
+              <button class="filter" data-filter="open">Open</button>
+              <button class="filter" data-filter="resolved">Resolved</button>
+            </div>
+
+            <div id="map" aria-label="Interactive map of sample civic issues"></div>
+
+            <div class="map-legend">
+              <span><i class="dot" style="background:#bc5148"></i>High priority</span>
+              <span><i class="dot" style="background:#d99a36"></i>In progress</span>
+              <span><i class="dot" style="background:#39805a"></i>Resolved</span>
+            </div>
+          </article>
+
+          <article class="card" id="issuesCard">
+            <div class="card-heading">
+              <div>
+                <h2>Priority issues</h2>
+                <div class="small-text">Sample reports needing visibility</div>
+              </div>
+              <button class="filter" id="viewAll">View all</button>
+            </div>
+
+            <div class="issue-list" id="issueList">
+              <div class="issue">
+                <div class="issue-top">
+                  <div class="issue-title">Road damage near market</div>
+                  <span class="status open">Open</span>
+                </div>
+                <div class="issue-meta">Roads department · Demo location</div>
+                <div class="issue-meta">
+                  <span class="priority">● High priority</span>
+                  &nbsp; · &nbsp; Target: 28 Oct
+                </div>
+              </div>
+
+              <div class="issue">
+                <div class="issue-top">
+                  <div class="issue-title">Streetlight not working</div>
+                  <span class="status">In progress</span>
+                </div>
+                <div class="issue-meta">Electrical department · Demo location</div>
+                <div class="issue-meta">
+                  <span class="priority">● High priority</span>
+                  &nbsp; · &nbsp; Target: 27 Oct
+                </div>
+              </div>
+
+              <div class="issue">
+                <div class="issue-top">
+                  <div class="issue-title">Waste collection delay</div>
+                  <span class="status">In progress</span>
+                </div>
+                <div class="issue-meta">Sanitation department · Demo location</div>
+                <div class="issue-meta">Priority: Medium · Target: 29 Oct</div>
+              </div>
+
+              <div class="issue">
+                <div class="issue-top">
+                  <div class="issue-title">Blocked roadside drain</div>
+                  <span class="status resolved">Resolved</span>
+                </div>
+                <div class="issue-meta">Drainage department · Demo location</div>
+                <div class="issue-meta">Resolution awaiting citizen feedback</div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="bottom-grid" id="analytics">
+          <article class="card">
+            <div class="card-heading">
+              <div>
+                <h2>Issues by category</h2>
+                <div class="small-text">Illustrative distribution</div>
+              </div>
+            </div>
+            <div class="chart-body">
+              <div class="bar-row">
+                <span>Roads</span>
+                <div class="bar-track"><div class="bar-fill" style="width:82%"></div></div>
+                <strong>72</strong>
+              </div>
+              <div class="bar-row">
+                <span>Sanitation</span>
+                <div class="bar-track"><div class="bar-fill" style="width:65%"></div></div>
+                <strong>57</strong>
+              </div>
+              <div class="bar-row">
+                <span>Drainage</span>
+                <div class="bar-track"><div class="bar-fill" style="width:49%"></div></div>
+                <strong>43</strong>
+              </div>
+              <div class="bar-row">
+                <span>Streetlights</span>
+                <div class="bar-track"><div class="bar-fill" style="width:39%"></div></div>
+                <strong>34</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-heading">
+              <div>
+                <h2>Resolution snapshot</h2>
+                <div class="small-text">Illustrative demo performance</div>
+              </div>
+            </div>
+            <div class="resolution-score">
+              <div class="score-ring"><strong>65%</strong></div>
+              <div>
+                <h2>Reported as resolved</h2>
+                <div class="small-text" style="line-height:1.8">
+                  162 of 248 sample reports have a resolved status.
+                  <br>
+                  Status does not independently verify repair quality.
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <footer>
+          NagarNiti · Civic issues, visible progress, shared accountability
+          <br><br>
+          Prototype interface · Not an official government portal
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const issues = [
+      {
+        title: "Road damage near market",
+        type: "high",
+        status: "open",
+        lat: 17.9915,
+        lng: 74.4310,
+        department: "Roads department"
+      },
+      {
+        title: "Streetlight not working",
+        type: "high",
+        status: "progress",
+        lat: 17.9970,
+        lng: 74.4250,
+        department: "Electrical department"
+      },
+      {
+        title: "Waste collection delay",
+        type: "medium",
+        status: "progress",
+        lat: 17.9850,
+        lng: 74.4380,
+        department: "Sanitation department"
+      },
+      {
+        title: "Blocked roadside drain",
+        type: "medium",
+        status: "resolved",
+        lat: 17.9890,
+        lng: 74.4200,
+        department: "Drainage department"
+      },
+      {
+        title: "Damaged footpath",
+        type: "high",
+        status: "open",
+        lat: 17.9800,
+        lng: 74.4300,
+        department: "Roads department"
+      },
+      {
+        title: "Water leakage",
+        type: "medium",
+        status: "open",
+        lat: 18.0020,
+        lng: 74.4400,
+        department: "Water department"
+      }
+    ];
+
+    const map = L.map("map").setView([17.991, 74.431], 14);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    const markerLayer = L.layerGroup().addTo(map);
+    let currentFilter = "all";
+
+    function markerColor(issue) {
+      if (issue.status === "resolved") return "#39805a";
+      if (issue.type === "high") return "#bc5148";
+      return "#d99a36";
+    }
+
+    function renderMarkers() {
+      markerLayer.clearLayers();
+
+      const filtered = issues.filter(issue => {
+        if (currentFilter === "all") return true;
+        if (currentFilter === "high") return issue.type === "high";
+        if (currentFilter === "open") return issue.status === "open";
+        if (currentFilter === "resolved") return issue.status === "resolved";
+        return true;
+      });
+
+      filtered.forEach(issue => {
+        const marker = L.circleMarker([issue.lat, issue.lng], {
+          radius: 8,
+          color: "#ffffff",
+          weight: 2,
+          fillColor: markerColor(issue),
+          fillOpacity: 1
+        }).addTo(markerLayer);
+
+        marker.bindPopup(
+          "<strong>" + issue.title + "</strong><br>" +
+          issue.department + "<br>" +
+          "Status: " + issue.status
+        );
+      });
+    }
+
+    renderMarkers();
+
+    document.querySelectorAll("[data-filter]").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll("[data-filter]").forEach(item => {
+          item.classList.remove("active");
+        });
+
+        button.classList.add("active");
+        currentFilter = button.dataset.filter;
+        renderMarkers();
+      });
+    });
+
+    document.querySelectorAll("[data-view]").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll("[data-view]").forEach(item => {
+          item.classList.remove("active");
+        });
+        button.classList.add("active");
+
+        const view = button.dataset.view;
+
+        if (view === "map") {
+          document.getElementById("mapCard").scrollIntoView({
+            behavior: "smooth"
+          });
+          setTimeout(() => map.invalidateSize(), 250);
+        } else if (view === "issues") {
+          document.getElementById("issuesCard").scrollIntoView({
+            behavior: "smooth"
+          });
+        } else if (view === "analytics") {
+          document.getElementById("analytics").scrollIntoView({
+            behavior: "smooth"
+          });
+        } else {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      });
+    });
+
+    document.getElementById("viewAll").addEventListener("click", () => {
+      document.getElementById("issuesCard").scrollIntoView({
+        behavior: "smooth"
+      });
+    });
+
+    document.getElementById("reportBtn").addEventListener("click", () => {
+      alert("The issue reporting form is our next build step!");
+    });
+  </script>
+</body>
+</html>
